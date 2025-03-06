@@ -10,9 +10,9 @@ class Dictionary {
         val rawData = wordsFile.readLines()
 
         rawData.forEach { word ->
-            val (original, translateWord) = word.split(" ")
+            val (original, translateWord, countCorrectAnswers) = word.split("|")
 
-            words.add(Word(original, translateWord))
+            words.add(Word(original, translateWord, countCorrectAnswers.toIntOrNull() ?: 0))
         }
     }
 

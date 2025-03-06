@@ -5,6 +5,6 @@ fun main() {
     val dictionaryWords = dictionary.getListWords()
 
     dictionaryWords.forEach { word ->
-        println("Original: ${word.original}, translate: ${word.word}")
+        println("Original: ${word.original}, translate: ${word.word}, count correct answers: ${word.correctAnswersCount}")
     }
 }
