@@ -1,6 +1,9 @@
 package org.example
 
 import java.io.File
+import kotlin.math.roundToInt
+
+const val LEARNED_COUNT = 3
 
 class Dictionary {
     private var words = mutableListOf<Word>()
@@ -16,7 +19,11 @@ class Dictionary {
         }
     }
 
-    fun getListWords(): List<Word> {
-        return words
+    fun calculateStatistics() {
+        val totalCount = words.size
+        val correctAnswersCount = words.filter { it.correctAnswersCount == LEARNED_COUNT }.size
+        val percent = (correctAnswersCount.toDouble() / totalCount.toDouble() * 100.0).roundToInt()
+
+        println(String.format("Выучено %d из %d | %d", correctAnswersCount, words.size, percent))
     }
 }

@@ -2,7 +2,6 @@ package org.example
 
 fun main() {
     val dictionary = Dictionary()
-    val dictionaryWords = dictionary.getListWords()
 
     while (true) {
         println("""
@@ -16,7 +15,7 @@ fun main() {
 
         when (action) {
             "1" -> println("Учить слова")
-            "2" -> println("Статистика")
+            "2" -> dictionary.calculateStatistics()
             "0" -> break
             else -> println("Введите 1, 2 или 0")
         }
