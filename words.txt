@@ -1,8 +1,8 @@
 hello|привет|3
 dog|собака|2
 cat|кошка|2
-hat|шляпа|3
+hat|шляпа|
 notebook|ноутбук|1
 table|стол|2
-water|вода|3
-lamp|лампа|3
+water|вода|2
+lamp|лампа|1

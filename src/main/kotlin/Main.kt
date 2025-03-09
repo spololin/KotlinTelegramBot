@@ -14,7 +14,7 @@ fun main() {
         val action = readln().trim()
 
         when (action) {
-            "1" -> println("Учить слова")
+            "1" -> dictionary.processLearning()
             "2" -> dictionary.calculateStatistics()
             "0" -> break
             else -> println("Введите 1, 2 или 0")
