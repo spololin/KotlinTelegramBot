@@ -15,7 +15,7 @@ class Dictionary {
         rawData.forEach { word ->
             val (original, translateWord, countCorrectAnswers) = word.split("|")
 
-            words.add(Word(original, translateWord, countCorrectAnswers.toIntOrNull() ?: 0))
+            words.add(Word(original.trim(), translateWord.trim(), countCorrectAnswers.toIntOrNull() ?: 0))
         }
     }
 
@@ -38,12 +38,38 @@ class Dictionary {
         for (word in notLearnedList) {
             val questionWords = notLearnedList.filter { it != word }.shuffled().take(LEARNED_COUNT)
             val questionAnswers = (questionWords.map { it.word } + listOf(word.word)).shuffled()
+            val correctAnswerIdx = questionAnswers.indexOfFirst { it == word.word }
 
             println()
             println("${word.original}:")
 
             questionAnswers.forEachIndexed { idx, it -> println(" ${idx + 1} - $it") }
-            val answer = readln()
+            println("------------")
+            println(" 0 - Меню")
+            val answer = readln().toIntOrNull()
+
+            if (answer != null) {
+                if (answer == 0) {
+                    return
+                }
+
+                if (answer - 1 == correctAnswerIdx) {
+                    println("Правильно!")
+                    word.correctAnswersCount++
+                    saveDictionary()
+                } else {
+                    println("Неправильно! ${word.original} - это ${word.word}")
+                }
+            }
+        }
+    }
+
+    private fun saveDictionary() {
+        val wordsFile = File("words.txt")
+        wordsFile.writeText("")
+
+        words.forEach { word ->
+            wordsFile.appendText("${word.original}|${word.word}|${word.correctAnswersCount}\n")
         }
     }
 }
