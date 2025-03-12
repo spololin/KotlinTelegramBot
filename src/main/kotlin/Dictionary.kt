@@ -26,4 +26,24 @@ class Dictionary {
 
         println(String.format("Выучено %d из %d | %d", correctAnswersCount, words.size, percent))
     }
+
+    fun processLearning() {
+        val notLearnedList = words.filter { it.correctAnswersCount < LEARNED_COUNT }
+
+        if (notLearnedList.isEmpty()) {
+            println("Все слова в словаре выучены")
+            return
+        }
+
+        for (word in notLearnedList) {
+            val questionWords = notLearnedList.filter { it != word }.shuffled().take(LEARNED_COUNT)
+            val questionAnswers = (questionWords.map { it.word } + listOf(word.word)).shuffled()
+
+            println()
+            println("${word.original}:")
+
+            questionAnswers.forEachIndexed { idx, it -> println(" ${idx + 1} - $it") }
+            val answer = readln()
+        }
+    }
 }
