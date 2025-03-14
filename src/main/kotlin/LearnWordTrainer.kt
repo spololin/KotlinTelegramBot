@@ -3,27 +3,31 @@ package org.example
 import java.io.File
 import kotlin.math.roundToInt
 
-const val LEARNED_COUNT = 3
-const val COUNT_ANSWERS = 4
-
-class LearnWordTrainer {
+class LearnWordTrainer(
+    private val learnedCount: Int = 3,
+    private val countAnswersInQuestion: Int = 4
+) {
     private var question: Question? = null
     private var words = mutableListOf<Word>()
 
     init {
-        val wordsFile = File("words.txt")
-        val rawData = wordsFile.readLines()
+        try {
+            val wordsFile = File("words.txt")
+            val rawData = wordsFile.readLines()
 
-        rawData.forEach { word ->
-            val (original, translateWord, countCorrectAnswers) = word.split("|")
+            rawData.forEach { word ->
+                val (original, translateWord, countCorrectAnswers) = word.split("|")
 
-            words.add(Word(original.trim(), translateWord.trim(), countCorrectAnswers.toIntOrNull() ?: 0))
+                words.add(Word(original.trim(), translateWord.trim(), countCorrectAnswers.toIntOrNull() ?: 0))
+            }
+        } catch(e: IndexOutOfBoundsException) {
+            throw IllegalStateException("Некорректный файл")
         }
     }
 
     fun calculateStatistics(): Statistics {
         val totalCount = words.size
-        val correctAnswersCount = words.filter { it.correctAnswersCount == LEARNED_COUNT }.size
+        val correctAnswersCount = words.filter { it.correctAnswersCount == learnedCount }.size
         val percent = (correctAnswersCount.toDouble() / totalCount.toDouble() * 100.0).roundToInt()
 
         return Statistics(totalCount, correctAnswersCount, percent)
@@ -39,9 +43,17 @@ class LearnWordTrainer {
     }
 
     fun getNextQuestion(): Question? {
-        val notLearnedList = words.filter { it.correctAnswersCount < LEARNED_COUNT }
+        val notLearnedList = words.filter { it.correctAnswersCount < learnedCount }
         if (notLearnedList.isEmpty()) return null
-        val questionWords = notLearnedList.take(COUNT_ANSWERS).shuffled()
+
+        val questionWords = if (notLearnedList.size < countAnswersInQuestion) {
+            val learnedList = words.filter { it.correctAnswersCount >= learnedCount }.shuffled()
+            notLearnedList.shuffled().take(countAnswersInQuestion) +
+                    learnedList.take(countAnswersInQuestion - notLearnedList.size)
+        } else {
+            notLearnedList.shuffled().take(countAnswersInQuestion)
+        }.shuffled()
+
         val questionAnswers = questionWords.random()
 
         question = Question(
