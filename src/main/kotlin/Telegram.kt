@@ -3,7 +3,7 @@ package org.example
 fun main(args: Array<String>) {
     val botToken = args[0]
     val telegramService = TelegramBotService(botToken)
-    var updateId: Int? = 0
+    var updateId = 0
     val updateIdRegex: Regex = "\"update_id\":(\\d+),".toRegex()
     val messageTextRegex: Regex = "\"text\":\"(.+)\"".toRegex()
     val chatIdRegex: Regex = "\"chat\":.\"id\":(\\d+),".toRegex()
@@ -23,7 +23,7 @@ fun main(args: Array<String>) {
 
         val chatIdMatchResult: MatchResult? = chatIdRegex.find(updates)
         val chatIdGroups = chatIdMatchResult?.groups
-        val chatId = chatIdGroups?.get(1)?.value?.toIntOrNull() ?: continue
+        val chatId = chatIdGroups?.get(1)?.value?.toLongOrNull() ?: continue
 
         if (text.equals("hello", ignoreCase = true)) telegramService.sendMessage(chatId, "Hello!")
     }
