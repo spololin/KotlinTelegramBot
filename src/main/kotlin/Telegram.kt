@@ -3,28 +3,31 @@ package org.example
 fun main(args: Array<String>) {
     val botToken = args[0]
     val telegramService = TelegramBotService(botToken)
-    var updateId: Int? = 0
+    var updateId = 0
+
     val updateIdRegex: Regex = "\"update_id\":(\\d+),".toRegex()
     val messageTextRegex: Regex = "\"text\":\"(.+)\"".toRegex()
     val chatIdRegex: Regex = "\"chat\":.\"id\":(\\d+),".toRegex()
+    val dataRegex: Regex = "\"data\":\"(.+?)\"".toRegex()
 
     while (true) {
         Thread.sleep(2000)
         val updates: String = telegramService.getUpdates(updateId)
         println(updates)
 
-        val updateIdMatchResult: MatchResult? = updateIdRegex.find(updates)
-        val updateIdGroups = updateIdMatchResult?.groups
-        updateId = updateIdGroups?.get(1)?.value?.toIntOrNull()?.plus(1) ?: continue
+        updateId = updateIdRegex.find(updates)?.groups?.get(1)?.value?.toIntOrNull()?.plus(1) ?: continue
 
-        val textMatchResult: MatchResult? = messageTextRegex.find(updates)
-        val textGroups = textMatchResult?.groups
-        val text = textGroups?.get(1)?.value
+        val message = messageTextRegex.find(updates)?.groups?.get(1)?.value
+        val chatId = chatIdRegex.find(updates)?.groups?.get(1)?.value?.toLong()
+        val data = dataRegex.find(updates)?.groups?.get(1)?.value
 
-        val chatIdMatchResult: MatchResult? = chatIdRegex.find(updates)
-        val chatIdGroups = chatIdMatchResult?.groups
-        val chatId = chatIdGroups?.get(1)?.value?.toIntOrNull() ?: continue
+        if (message.equals("hello", ignoreCase = true) && chatId != null)
+            telegramService.sendMessage(chatId, "Hello!")
 
-        if (text.equals("hello", ignoreCase = true)) telegramService.sendMessage(chatId, "Hello!")
+        if (message.equals("menu", ignoreCase = true) && chatId != null)
+            telegramService.sendMenu(chatId)
+
+        if (data.equals("statistics_clicked", ignoreCase = true) && chatId != null)
+            telegramService.sendMessage(chatId, "Выучено 10 из 10 слов | 100%")
     }
 }
