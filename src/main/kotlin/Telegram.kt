@@ -18,16 +18,16 @@ fun main(args: Array<String>) {
         updateId = updateIdRegex.find(updates)?.groups?.get(1)?.value?.toIntOrNull()?.plus(1) ?: continue
 
         val message = messageTextRegex.find(updates)?.groups?.get(1)?.value
-        val chatId = chatIdRegex.find(updates)?.groups?.get(1)?.value?.toLong()
+        val chatId = chatIdRegex.find(updates)?.groups?.get(1)?.value?.toLongOrNull() ?: continue
         val data = dataRegex.find(updates)?.groups?.get(1)?.value
 
-        if (message.equals("hello", ignoreCase = true) && chatId != null)
+        if (message.equals("hello", ignoreCase = true))
             telegramService.sendMessage(chatId, "Hello!")
 
-        if (message.equals("menu", ignoreCase = true) && chatId != null)
+        if (message.equals("menu", ignoreCase = true))
             telegramService.sendMenu(chatId)
 
-        if (data.equals("statistics_clicked", ignoreCase = true) && chatId != null)
+        if (data.equals("statistics_clicked", ignoreCase = true))
             telegramService.sendMessage(chatId, "Выучено 10 из 10 слов | 100%")
     }
 }
