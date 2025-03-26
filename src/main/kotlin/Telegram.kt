@@ -3,6 +3,7 @@ package org.example
 fun main(args: Array<String>) {
     val botToken = args[0]
     val telegramService = TelegramBotService(botToken)
+    val trainer = LearnWordTrainer()
     var updateId = 0
 
     val updateIdRegex: Regex = "\"update_id\":(\\d+),".toRegex()
@@ -27,7 +28,14 @@ fun main(args: Array<String>) {
         if (message.equals("menu", ignoreCase = true))
             telegramService.sendMenu(chatId)
 
-        if (data.equals("statistics_clicked", ignoreCase = true))
-            telegramService.sendMessage(chatId, "Выучено 10 из 10 слов | 100%")
+        if (data.equals("statistics_clicked", ignoreCase = true)) {
+            val statistics = trainer.calculateStatistics()
+            telegramService.sendMessage(chatId, String.format(
+                "Выучено %d из %d слов | %d%%",
+                statistics.correctAnswersCount,
+                statistics.totalCount,
+                statistics.percent
+            ))
+        }
     }
 }
