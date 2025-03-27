@@ -67,7 +67,7 @@ class TelegramBotService (
     fun sendQuestion(chatId: Long, question: Question): String {
         val urlSendMessage = "$TELEGRAM_URL$botToken/sendMessage"
 
-        val wordButton = question.variants.mapIndexed { index, word ->
+        val answerButtons = question.variants.mapIndexed { index, word ->
             "{\"text\": \"${word.translate}\",\"callback_data\": \"${CALLBACK_DATA_ANSWER_PREFIX + index}\"}"
         }
 
@@ -77,7 +77,7 @@ class TelegramBotService (
                  "text": "${question.correctAnswer.original}",
                  "reply_markup": {
                      "inline_keyboard": [
-                         $wordButton
+                         $answerButtons
                      ]
                  }
              }
@@ -88,6 +88,7 @@ class TelegramBotService (
             .POST(HttpRequest.BodyPublishers.ofString(sendQuestionBody))
             .build()
         val response: HttpResponse<String> = client.send(request, HttpResponse.BodyHandlers.ofString())
+
         return response.body()
     }
 }

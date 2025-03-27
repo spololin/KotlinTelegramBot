@@ -30,12 +30,14 @@ fun main(args: Array<String>) {
 
         if (data.equals("statistics_clicked", ignoreCase = true)) {
             val statistics = trainer.calculateStatistics()
-            telegramService.sendMessage(chatId, String.format(
-                "Выучено %d из %d слов | %d%%",
-                statistics.correctAnswersCount,
-                statistics.totalCount,
-                statistics.percent
-            ))
+            telegramService.sendMessage(
+                chatId, String.format(
+                    "Выучено %d из %d слов | %d%%",
+                    statistics.correctAnswersCount,
+                    statistics.totalCount,
+                    statistics.percent
+                )
+            )
         }
 
         if (data.equals("learn_words_clicked", ignoreCase = true))
@@ -46,10 +48,8 @@ fun main(args: Array<String>) {
 fun checkNextQuestionAndSend(trainer: LearnWordTrainer, service: TelegramBotService, chatId: Long) {
     val question = trainer.getNextQuestion()
 
-    if (question == null) {
-        service.sendMessage(
-            chatId,
-            "Все слова в словаре выучены"
-        )
-    } else service.sendQuestion(chatId, question)
+    if (question == null)
+        service.sendMessage(chatId, "Все слова в словаре выучены")
+    else
+        service.sendQuestion(chatId, question)
 }
