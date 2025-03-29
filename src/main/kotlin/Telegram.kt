@@ -42,6 +42,24 @@ fun main(args: Array<String>) {
 
         if (data.equals("learn_words_clicked", ignoreCase = true))
             checkNextQuestionAndSend(trainer, telegramService, chatId)
+
+        if (data?.startsWith(CALLBACK_DATA_ANSWER_PREFIX) == true) {
+            val answerIdx = data.substringAfter("_").toInt()
+
+            if (trainer.checkAnswer(answerIdx)) {
+                telegramService.sendMessage(
+                    chatId,
+                    "Правильно!")
+            } else {
+                telegramService.sendMessage(
+                    chatId,
+                    "Неправильно! ${trainer.question?.correctAnswer?.original} " +
+                            "- это ${trainer.question?.correctAnswer?.translate}"
+                )
+            }
+
+            checkNextQuestionAndSend(trainer, telegramService, chatId)
+        }
     }
 }
 

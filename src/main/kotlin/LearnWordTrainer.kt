@@ -7,7 +7,7 @@ class LearnWordTrainer(
     private val learnedCount: Int = 3,
     private val countAnswersInQuestion: Int = 4
 ) {
-    private var question: Question? = null
+    var question: Question? = null
     private var words = mutableListOf<Word>()
 
     init {
