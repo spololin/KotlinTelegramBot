@@ -45,31 +45,32 @@ data class Chat(
 fun main(args: Array<String>) {
     val botToken = args[0]
     val telegramService = TelegramBotService(botToken)
-    val trainer = LearnWordTrainer()
     var lastUpdateId = 0L
+    val trainers = HashMap<Long, LearnWordTrainer>()
 
     while (true) {
         Thread.sleep(2000)
         val updates = telegramService.getUpdates(lastUpdateId).result
         if (updates.isEmpty()) continue
         val sortedUpdates = updates.sortedBy { it.updateId }
-        sortedUpdates.forEach { handleUpdate(it, trainer, telegramService) }
+        sortedUpdates.forEach { handleUpdate(it, trainers, telegramService) }
         lastUpdateId = sortedUpdates.last().updateId + 1
     }
 }
 
-fun handleUpdate(update: Update, trainer: LearnWordTrainer, telegramService: TelegramBotService) {
+fun handleUpdate(update: Update, trainers: HashMap<Long, LearnWordTrainer>, telegramService: TelegramBotService) {
     val message = update.message?.text
-    val chatId = update.message?.chat?.id ?: update.callbackQuery?.message?.chat?.id
+    val chatId = update.message?.chat?.id ?: update.callbackQuery?.message?.chat?.id ?: return
     val data = update.callbackQuery?.data
+    val trainer = trainers.getOrPut(chatId) { LearnWordTrainer("$chatId.txt") }
 
-    if (message == "hello" && chatId != null)
+    if (message == "hello")
         telegramService.sendMessage(chatId, "Hello!")
 
-    if (message == "menu" && chatId != null)
+    if (message == "menu")
         telegramService.sendMenu(chatId)
 
-    if (data == STATISTICS_CLICKED && chatId != null) {
+    if (data == STATISTICS_CLICKED) {
         val statistics = trainer.calculateStatistics()
         telegramService.sendMessage(
             chatId, String.format(
@@ -81,10 +82,10 @@ fun handleUpdate(update: Update, trainer: LearnWordTrainer, telegramService: Tel
         )
     }
 
-    if (data == LEARN_WORDS_CLICKED && chatId != null)
+    if (data == LEARN_WORDS_CLICKED)
         checkNextQuestionAndSend(trainer, telegramService, chatId)
 
-    if (data?.startsWith(CALLBACK_DATA_ANSWER_PREFIX) == true && chatId != null) {
+    if (data?.startsWith(CALLBACK_DATA_ANSWER_PREFIX) == true) {
         val answerIdx = data.substringAfter("_").toInt()
 
         if (trainer.checkAnswer(answerIdx)) {
@@ -101,6 +102,11 @@ fun handleUpdate(update: Update, trainer: LearnWordTrainer, telegramService: Tel
         }
 
         checkNextQuestionAndSend(trainer, telegramService, chatId)
+    }
+
+    if (data == RESET_CLICKED) {
+        trainer.resetProgress()
+        telegramService.sendMessage(chatId, "Прогресс сброшен")
     }
 }
 
