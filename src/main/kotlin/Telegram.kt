@@ -51,55 +51,56 @@ fun main(args: Array<String>) {
     while (true) {
         Thread.sleep(2000)
         val updates = telegramService.getUpdates(lastUpdateId).result
-        val firstUpdate = updates.firstOrNull() ?: continue
+        if (updates.isEmpty()) continue
+        val sortedUpdates = updates.sortedBy { it.updateId }
+        sortedUpdates.forEach { handleUpdate(it, trainer, telegramService) }
+        lastUpdateId = sortedUpdates.last().updateId + 1
+    }
+}
 
-        println(firstUpdate)
+fun handleUpdate(update: Update, trainer: LearnWordTrainer, telegramService: TelegramBotService) {
+    val message = update.message?.text
+    val chatId = update.message?.chat?.id ?: update.callbackQuery?.message?.chat?.id
+    val data = update.callbackQuery?.data
 
-        lastUpdateId = firstUpdate.updateId + 1
+    if (message == "hello" && chatId != null)
+        telegramService.sendMessage(chatId, "Hello!")
 
-        val message = firstUpdate.message?.text
-        val chatId = firstUpdate.message?.chat?.id ?: firstUpdate.callbackQuery?.message?.chat?.id
-        val data = firstUpdate.callbackQuery?.data
+    if (message == "menu" && chatId != null)
+        telegramService.sendMenu(chatId)
 
-        if (message == "hello" && chatId != null)
-            telegramService.sendMessage(chatId, "Hello!")
+    if (data == STATISTICS_CLICKED && chatId != null) {
+        val statistics = trainer.calculateStatistics()
+        telegramService.sendMessage(
+            chatId, String.format(
+                "Выучено %d из %d слов | %d%%",
+                statistics.correctAnswersCount,
+                statistics.totalCount,
+                statistics.percent
+            )
+        )
+    }
 
-        if (message == "menu" && chatId != null)
-            telegramService.sendMenu(chatId)
+    if (data == LEARN_WORDS_CLICKED && chatId != null)
+        checkNextQuestionAndSend(trainer, telegramService, chatId)
 
-        if (data == STATISTICS_CLICKED && chatId != null) {
-            val statistics = trainer.calculateStatistics()
+    if (data?.startsWith(CALLBACK_DATA_ANSWER_PREFIX) == true && chatId != null) {
+        val answerIdx = data.substringAfter("_").toInt()
+
+        if (trainer.checkAnswer(answerIdx)) {
             telegramService.sendMessage(
-                chatId, String.format(
-                    "Выучено %d из %d слов | %d%%",
-                    statistics.correctAnswersCount,
-                    statistics.totalCount,
-                    statistics.percent
-                )
+                chatId,
+                "Правильно!"
+            )
+        } else {
+            telegramService.sendMessage(
+                chatId,
+                "Неправильно! ${trainer.question?.correctAnswer?.original} " +
+                        "- это ${trainer.question?.correctAnswer?.translate}"
             )
         }
 
-        if (data == LEARN_WORDS_CLICKED && chatId != null)
-            checkNextQuestionAndSend(trainer, telegramService, chatId)
-
-        if (data?.startsWith(CALLBACK_DATA_ANSWER_PREFIX) == true && chatId != null) {
-            val answerIdx = data.substringAfter("_").toInt()
-
-            if (trainer.checkAnswer(answerIdx)) {
-                telegramService.sendMessage(
-                    chatId,
-                    "Правильно!"
-                )
-            } else {
-                telegramService.sendMessage(
-                    chatId,
-                    "Неправильно! ${trainer.question?.correctAnswer?.original} " +
-                            "- это ${trainer.question?.correctAnswer?.translate}"
-                )
-            }
-
-            checkNextQuestionAndSend(trainer, telegramService, chatId)
-        }
+        checkNextQuestionAndSend(trainer, telegramService, chatId)
     }
 }
 
