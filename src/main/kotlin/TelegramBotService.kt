@@ -14,6 +14,7 @@ const val TELEGRAM_URL = "https://api.telegram.org/bot"
 const val CALLBACK_DATA_ANSWER_PREFIX = "answer_"
 const val LEARN_WORDS_CLICKED = "learn_words_clicked"
 const val STATISTICS_CLICKED = "statistics_clicked"
+const val RESET_CLICKED = "reset_clicked"
 
 @Serializable
 data class SendMessageRequest(
@@ -88,6 +89,9 @@ class TelegramBotService(
                             text = "Статистика",
                             callbackData = STATISTICS_CLICKED,
                         ),
+                    ),
+                    listOf(
+                        InlineKeyboard(text = "Сбросить прогресс", callbackData = RESET_CLICKED)
                     )
                 )
             )

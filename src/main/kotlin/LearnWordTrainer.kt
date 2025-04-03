@@ -4,6 +4,7 @@ import java.io.File
 import kotlin.math.roundToInt
 
 class LearnWordTrainer(
+    private val fileName: String = "words.txt",
     private val learnedCount: Int = 3,
     private val countAnswersInQuestion: Int = 4
 ) {
@@ -12,7 +13,10 @@ class LearnWordTrainer(
 
     init {
         try {
-            val wordsFile = File("words.txt")
+            val wordsFile = File(fileName)
+            if (!wordsFile.exists()) {
+                File("words.txt").copyTo(wordsFile)
+            }
             val rawData = wordsFile.readLines()
 
             rawData.forEach { word ->
@@ -34,7 +38,7 @@ class LearnWordTrainer(
     }
 
     private fun saveDictionary() {
-        val wordsFile = File("words.txt")
+        val wordsFile = File(fileName)
         wordsFile.writeText("")
 
         words.forEach { word ->
@@ -75,5 +79,10 @@ class LearnWordTrainer(
                 false
             }
         } ?: false
+    }
+
+    fun resetProgress() {
+        words.forEach { it.correctAnswersCount = 0 }
+        saveDictionary()
     }
 }
